@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Support Chat</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Using a generic airline logo or plane icon for the profile -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Chat Screen -->
+        <div id="chat-screen" class="screen active">
+            <header class="chat-header">
+                <div class="back-button"><i class="fas fa-arrow-left"></i></div>
+                <div class="profile-info">
+                    <div class="profile-pic">
+                        <i class="fas fa-plane-departure"></i>
+                    </div>
+                    <div class="user-details">
+                        <span class="username">SkyHigh Airlines</span>
+                        <span class="status">Business Account</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <i class="fas fa-video"></i>
+                    <i class="fas fa-phone"></i>
+                    <i class="fas fa-ellipsis-v"></i>
+                </div>
+            </header>
+
+            <div class="chat-body" id="chat-body">
+                <div class="date-divider"><span>Today</span></div>
+                <!-- Messages will be injected here -->
+            </div>
+
+            <footer class="chat-footer">
+                <i class="fas fa-plus"></i>
+                <div class="input-box">
+                    <input type="text" placeholder="Type a message..." disabled>
+                </div>
+                <i class="fas fa-camera"></i>
+                <i class="fas fa-microphone"></i>
+            </footer>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
