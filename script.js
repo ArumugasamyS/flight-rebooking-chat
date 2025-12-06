@@ -6,7 +6,7 @@ let currentLanguage = 'en';
 const translations = {
     en: {
         greeting: "Hello, I am your SkyHigh Airlines assistant. ✈️<br><br>I'm here to help you rebook or get a refund using AI-powered analysis of real-time data to find the best recommendations for you.<br><br>We apologize to inform you that the flight SH102 has been cancelled.",
-        details: "Here are your flight details:<br><strong>PNR:</strong> XJ92KL<br><strong>Passenger:</strong> Jean-Pierre Dubois<br><strong>Flight:</strong> SH102 (CDG - LHR)<br><strong>Date:</strong> 26 Nov 2025<br><strong>Time:</strong> 10:00",
+        details: "Here are your flight details:<br><strong>PNR:</strong> XJ92KL<br><strong>Passenger:</strong> Jean-Pierre Dubois<br><strong>Flight:</strong> SH102 (CDG - LHR)<br><strong>Date:</strong> {date}<br><strong>Time:</strong> 10:00",
         options_text: "How would you like to proceed?",
         option_next: "Rebook on next available flight",
         option_other: "View other flight options",
@@ -28,7 +28,7 @@ const translations = {
     },
     fr: {
         greeting: "Bonjour, je suis votre assistant SkyHigh Airlines. ✈️<br><br>Je suis là pour vous aider à réserver de nouveau ou à obtenir un remboursement grâce à une analyse IA des données en temps réel pour trouver les meilleures recommandations.<br><br>Je vois que votre vol SH102 pour Londres a été annulé.",
-        details: "Voici les détails de votre vol :<br><strong>PNR :</strong> XJ92KL<br><strong>Passager :</strong> Jean-Pierre Dubois<br><strong>Vol :</strong> SH102 (CDG - LHR)<br><strong>Date :</strong> 26 Nov 2025<br><strong>Heure :</strong> 10:00",
+        details: "Voici les détails de votre vol :<br><strong>PNR :</strong> XJ92KL<br><strong>Passager :</strong> Jean-Pierre Dubois<br><strong>Vol :</strong> SH102 (CDG - LHR)<br><strong>Date :</strong> {date}<br><strong>Heure :</strong> 10:00",
         options_text: "Comment souhaitez-vous procéder ?",
         option_next: "Réserver le prochain vol disponible",
         option_other: "Voir d'autres options de vol",
@@ -58,11 +58,33 @@ function t(key, params = {}) {
     }
     return text;
 }
+function generateRandomPNR() {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let pnr = "";
+    for (let i = 0; i < 6; i++) {
+        pnr += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return pnr;
+}
 
 // Helper to get current time
 function getCurrentTime() {
     const now = new Date();
     return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+// Helper to get dynamic date string (e.g., "26 Nov 2025")
+function getDynamicDate(offsetDays = 0) {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// Helper to get short date (e.g., "27 Nov")
+function getShortDate(offsetDays = 0) {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
 
 // Add Message to Chat
@@ -126,9 +148,7 @@ function generateRequestId() {
 
 // Show Rebooking Options
 function showRebookingOptions() {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateStr = tomorrow.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const dateStr = getShortDate(1); // Tomorrow
 
     const options = [
         { label: `${t('option_next')} (Tomorrow, ${dateStr} 10:00)`, action: 'next' },
@@ -161,7 +181,7 @@ function saveRequest(requestId, selectedOption) {
         timestamp: now.toISOString(),
         flightTime: flightTime,
         alternatives: [
-            "Rebook on next available flight (Tomorrow 10:00)",
+            `Rebook on next available flight (Tomorrow, ${getShortDate(1)} 10:00)`,
             "08:00 - Air France (Direct)",
             "13:30 - British Airways (Direct)",
             "16:45 - Lufthansa (1 Stop)",
@@ -295,7 +315,7 @@ function showBoardingPass(req) {
                     </div>
                     <div class="pass-item right">
                         <label>Date</label>
-                        <span>27 Nov</span>
+                        <span>${getShortDate(1)}</span>
                     </div>
                 </div>
                 <div class="pass-row">
@@ -352,7 +372,7 @@ function openFullBoardingPass(passenger, airline, flightNum, time) {
                         </div>
                         <div class="info-item">
                             <label>Date</label>
-                            <span>27 Nov 2025</span>
+                            <span>${getDynamicDate(1)}</span>
                         </div>
                         <div class="info-item">
                             <label>Departs</label>
@@ -391,6 +411,16 @@ function showRejectionCard(req) {
     // Check if already exists
     if (document.querySelector('.rejection-card-container')) return;
 
+    // Determine alternative suggestion
+    // If user selected British Airways, suggest Lufthansa. Otherwise suggest British Airways.
+    let suggestedOption = "British Airways (13:30 - Direct)";
+    let suggestedAirline = "British Airways";
+
+    if (req.option && req.option.includes("British Airways")) {
+        suggestedOption = "Lufthansa (16:45 - 1 Stop)";
+        suggestedAirline = "Lufthansa";
+    }
+
     const cardDiv = document.createElement('div');
     cardDiv.className = 'message bot rejection-card-container';
     cardDiv.innerHTML = `
@@ -399,13 +429,17 @@ function showRejectionCard(req) {
                 <i class="fas fa-exclamation-circle"></i> Alternative Suggestion
             </div>
             <div class="rejection-body">
-                <p>Our AI analysis suggests a better option for you based on availability and connection times.</p>
+                <p>Our AI analysis suggests this is the best available option for you based on current network status.</p>
                 <div class="suggested-option">
                     <div class="opt-details">
-                        <span class="opt-airline">British Airways</span>
-                        <span class="opt-time">13:30 - Direct</span>
+                        <span class="opt-airline">${suggestedAirline}</span>
+                        <span class="opt-time">${suggestedOption.split('(')[1].replace(')', '')}</span>
                     </div>
-                    <button class="btn-accept" onclick="acceptSuggestion('${req.id}')">Accept & Book</button>
+                    <div class="rejection-actions">
+                        <p class="auto-book-note"><i class="fas fa-bolt"></i> Clicking Accept will confirm booking instantly.</p>
+                        <button class="btn-accept" onclick="acceptSuggestion('${req.id}', '${suggestedOption}')">Accept & Book</button>
+                        <button class="btn-callback" onclick="requestCallback('${req.id}')">Request Call Back</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -414,10 +448,37 @@ function showRejectionCard(req) {
     chatBody.scrollTop = chatBody.scrollHeight;
 }
 
-function acceptSuggestion(id) {
+function acceptSuggestion(id, option) {
     addMessage("Accept & Book", "user");
     sendBotMessage("Great! We are booking this alternative for you immediately.", null, 1000);
-    // In real app, would trigger new approval flow
+
+    // Simulate processing delay then show boarding pass
+    setTimeout(() => {
+        // Create a mock request object for the new booking
+        const newReq = {
+            passenger: currentUser.name,
+            option: option,
+            pnr: generateRandomPNR() // New PNR for the new booking
+        };
+
+        showBoardingPass(newReq);
+
+        // Optional: Update status message
+        sendBotMessage(`Booking confirmed! Your new PNR is ${newReq.pnr}. Safe travels! ✈️`, null, 500);
+    }, 2500);
+}
+
+function requestCallback(id) {
+    addMessage("Request Call Back", "user");
+    sendBotMessage("We have received your request. An agent will call you shortly to discuss your options.", null, 1000);
+
+    // Update status in local storage for dashboard
+    let requests = JSON.parse(localStorage.getItem('flightRequests')) || [];
+    const reqIndex = requests.findIndex(r => r.id === id);
+    if (reqIndex !== -1) {
+        requests[reqIndex].status = 'Callback Requested';
+        localStorage.setItem('flightRequests', JSON.stringify(requests));
+    }
 }
 
 // Handle Option Click
@@ -568,7 +629,8 @@ function startChatFlow() {
     setTimeout(() => {
         const detailsText = t('details')
             .replace('Jean-Pierre Dubois', currentUser.name)
-            .replace('XJ92KL', currentUser.pnr);
+            .replace('XJ92KL', currentUser.pnr)
+            .replace('{date}', getDynamicDate());
         sendBotMessage(detailsText, null, 2000);
     }, 2500);
 

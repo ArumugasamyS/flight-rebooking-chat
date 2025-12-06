@@ -190,9 +190,15 @@ function renderTable() {
 
         // Translate status
         let displayStatus = req.status;
+        let statusClass = req.status.toLowerCase();
+
         if (req.status === 'Pending') displayStatus = t('status_pending');
         if (req.status === 'Approved') displayStatus = t('status_approved');
         if (req.status === 'Rejected') displayStatus = t('status_rejected');
+        if (req.status === 'Callback Requested') {
+            displayStatus = "Callback Req";
+            statusClass = "callback";
+        }
 
         row.innerHTML = `
             <td>
@@ -203,12 +209,14 @@ function renderTable() {
             <td>${req.pnr}</td>
             <td>${req.original}</td>
             <td>${req.option}</td>
-            <td><span class="status-badge ${req.status.toLowerCase()}">${displayStatus}</span></td>
+            <td><span class="status-badge ${statusClass}">${displayStatus}</span></td>
             <td>
                 <div class="actions">
                     ${req.status === 'Pending' ? `
                         <button class="btn-action btn-take-action" onclick="showMoreInfo('${req.id}')">${t('take_action')}</button>
-                    ` : '-'}
+                    ` : (req.status === 'Callback Requested' ? `
+                        <button class="btn-action btn-take-action" onclick="showMoreInfo('${req.id}')">View Details</button>
+                    ` : '-')}
                 </div>
             </td>
         `;
@@ -263,46 +271,68 @@ function showMoreInfo(id) {
     const optionsList = document.getElementById('modal-options-list');
     optionsList.innerHTML = '';
 
-    // Combine requested option + alternatives to show full context
-    let allOptions = [req.option];
-    if (req.alternatives) {
-        allOptions = [...allOptions, ...req.alternatives];
-    }
-    // Dedupe
-    allOptions = [...new Set(allOptions)];
-
-    allOptions.forEach(opt => {
-        const isSelected = opt === req.option;
-        const analysis = getAIAnalysis(opt);
-
-        const card = document.createElement('div');
-        card.className = `option-card ${isSelected ? 'selected' : ''}`;
-
-        // Determine tag text
-        let tagText = analysis.badge;
-        if (isSelected) {
-            tagText = "User Selection";
-        } else if (analysis.type === 'approve') {
-            tagText = "Suggested Alternative";
-        }
-
-        // Determine tag class
-        let tagClass = analysis.tagClass;
-        if (isSelected) tagClass = 'tag-neutral'; // User selection is neutral unless analyzed otherwise, but let's keep it simple
-        if (isSelected && analysis.type === 'approve') tagClass = 'tag-positive'; // If user picked a good one
-        if (isSelected && analysis.type === 'reject') tagClass = 'tag-negative'; // If user picked a bad one
-
-        card.innerHTML = `
-            <div class="option-header">
-                <span class="option-label">${opt}</span>
-                <span class="recommendation-tag ${tagClass}">${tagText}</span>
-            </div>
-            <div class="ai-inline-reasoning">
-                <i class="fas fa-robot"></i> ${t(analysis.key)}
+    // If Callback Requested, show contact options instead of flight options
+    if (req.status === 'Callback Requested') {
+        optionsList.innerHTML = `
+            <div class="callback-info">
+                <div class="callback-header">
+                    <i class="fas fa-phone-alt"></i> User requested a call back
+                </div>
+                <p>The user has requested to speak with an agent regarding their rebooking options.</p>
+                <div class="contact-actions">
+                    <button class="btn-contact"><i class="fas fa-phone"></i> Call User (+33 6 12 34 56 78)</button>
+                    <button class="btn-contact"><i class="fas fa-envelope"></i> Send Email</button>
+                </div>
             </div>
         `;
-        optionsList.appendChild(card);
-    });
+
+        // Hide standard actions
+        document.querySelector('.modal-actions').style.display = 'none';
+    } else {
+        // Show standard actions
+        document.querySelector('.modal-actions').style.display = 'flex';
+
+        // Combine requested option + alternatives to show full context
+        let allOptions = [req.option];
+        if (req.alternatives) {
+            allOptions = [...allOptions, ...req.alternatives];
+        }
+        // Dedupe
+        allOptions = [...new Set(allOptions)];
+
+        allOptions.forEach(opt => {
+            const isSelected = opt === req.option;
+            const analysis = getAIAnalysis(opt);
+
+            const card = document.createElement('div');
+            card.className = `option-card ${isSelected ? 'selected' : ''}`;
+
+            // Determine tag text
+            let tagText = analysis.badge;
+            if (isSelected) {
+                tagText = "User Selection";
+            } else if (analysis.type === 'approve') {
+                tagText = "Suggested Alternative";
+            }
+
+            // Determine tag class
+            let tagClass = analysis.tagClass;
+            if (isSelected) tagClass = 'tag-neutral'; // User selection is neutral unless analyzed otherwise, but let's keep it simple
+            if (isSelected && analysis.type === 'approve') tagClass = 'tag-positive'; // If user picked a good one
+            if (isSelected && analysis.type === 'reject') tagClass = 'tag-negative'; // If user picked a bad one
+
+            card.innerHTML = `
+                <div class="option-header">
+                    <span class="option-label">${opt}</span>
+                    <span class="recommendation-tag ${tagClass}">${tagText}</span>
+                </div>
+                <div class="ai-inline-reasoning">
+                    <i class="fas fa-robot"></i> ${t(analysis.key)}
+                </div>
+            `;
+            optionsList.appendChild(card);
+        });
+    }
 
     modal.style.display = 'flex';
 }

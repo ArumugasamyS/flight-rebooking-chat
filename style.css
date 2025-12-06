@@ -452,15 +452,14 @@ body {
     background: white;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 300px;
-    border: 1px solid #fee2e2;
+    max-width: 320px;
 }
 
 .rejection-header {
-    background: #fee2e2;
-    color: #991b1b;
+    background: #ef4444;
+    color: white;
     padding: 12px 15px;
     font-weight: 600;
     font-size: 14px;
@@ -475,37 +474,81 @@ body {
 
 .rejection-body p {
     font-size: 13px;
-    color: #475569;
+    color: #4b5563;
     margin-bottom: 15px;
     line-height: 1.4;
 }
 
 .suggested-option {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: #f3f4f6;
     border-radius: 8px;
     padding: 12px;
 }
 
 .opt-details {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    font-size: 13px;
+    flex-direction: column;
+    margin-bottom: 12px;
+}
+
+.opt-airline {
     font-weight: 600;
-    color: #1e293b;
+    color: #1f2937;
+    font-size: 14px;
+}
+
+.opt-time {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.rejection-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.auto-book-note {
+    font-size: 11px !important;
+    color: #059669 !important;
+    margin-bottom: 8px !important;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .btn-accept {
     width: 100%;
-    background: #0284c7;
+    padding: 10px;
+    background: #10b981;
     color: white;
     border: none;
-    padding: 8px;
     border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-accept:hover {
+    background: #059669;
+}
+
+.btn-callback {
+    width: 100%;
+    padding: 10px;
+    background: white;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-callback:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
 }
 
 .timeline-item .content h3 {
