@@ -33,51 +33,45 @@
 </head>
 
 <body>
-    <h1>Flight Rebooking System Architecture</h1>
+    <h1>Flight Rebooking Journey</h1>
     <div class="mermaid">
-        flowchart TD
-        %% Nodes
-        User([User / Passenger])
-        ChatUI[Chat Interface]
-        Dashboard[Operator Dashboard]
-        AI[AI Analysis Engine]
+        sequenceDiagram
+        autonumber
+        actor User as 👤 Passenger
+        participant Chat as 💬 Chat Interface
+        participant Ops as 🖥️ Operator Dashboard
 
-        %% Chat Flow
-        User -->|Opens Chat| ChatUI
-        ChatUI -->|Displays Greeting & Flight Details| User
-        ChatUI -->|Offers Options| User
+        Note over User, Chat: 1. INITIAL CONTACT
+        Chat->>User: "Flight Cancelled" Alert
+        Chat->>User: Show Flight Details
+        Chat->>User: Offer Options (Rebook/Refund)
 
-        User -->|Selects Option| ChatUI
-        ChatUI -->|Sends Request| Dashboard
+        Note over User, Chat: 2. USER ACTION
+        User->>Chat: Selects "Rebook Tomorrow"
+        Chat->>Ops: New Request (Status: Pending)
 
-        %% Dashboard Flow
-        Dashboard -->|Receives Request| Operator{Operator Action}
-        AI -->|Analyzes Request| Dashboard
-        AI -->|Provides Reasoning & Recommendation| Operator
+        Note over Ops: 3. OPERATOR REVIEW (Parallel)
+        Ops->>Ops: AI Analyzes Request
+        Ops->>Ops: Operator clicks "Take Action"
 
-        %% Approval Path
-        Operator -->|Approve| ChatUI
-        ChatUI -->|Shows Boarding Pass| User
+        alt Operator APPROVES
+        Ops->>Chat: Status Update: Approved
+        Chat->>User: Show Digital Boarding Pass
+        else Operator REJECTS
+        Ops->>Chat: Status Update: Rejected
+        Chat->>User: Show Rejection Card + Alternative
 
-        %% Rejection Path
-        Operator -->|Reject| ChatUI
-        ChatUI -->|Shows Rejection Card| User
+        opt User Accepts Alternative
+        User->>Chat: Click "Accept & Book"
+        Chat->>User: Show New Boarding Pass
+        end
 
-        %% Rejection Handling
-        User -->|Accepts Alternative| ChatUI
-        ChatUI -->|Generates New Boarding Pass| User
-
-        User -->|Requests Callback| ChatUI
-        ChatUI -->|Updates Status: Callback Req| Dashboard
-        Dashboard -->|Shows Contact Options| Operator
-
-        %% Styling
-        classDef green fill:#dcfce7,stroke:#166534,color:#166534;
-        classDef red fill:#fee2e2,stroke:#991b1b,color:#991b1b;
-        classDef blue fill:#eff6ff,stroke:#1e40af,color:#1e40af;
-
-        class ChatUI,Dashboard blue;
-        class AI green;
+        opt User Requests Callback
+        User->>Chat: Click "Request Callback"
+        Chat->>Ops: Update Status: Callback Req
+        Ops->>Ops: Show Contact Options (Call/Email)
+        end
+        end
     </div>
 </body>
 
