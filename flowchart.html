@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Rebooking System Flowchart</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+            background: #f8fafc;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+
+        .mermaid {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Flight Rebooking System Architecture</h1>
+    <div class="mermaid">
+        flowchart TD
+        %% Nodes
+        User([User / Passenger])
+        ChatUI[Chat Interface]
+        Dashboard[Operator Dashboard]
+        AI[AI Analysis Engine]
+
+        %% Chat Flow
+        User -->|Opens Chat| ChatUI
+        ChatUI -->|Displays Greeting & Flight Details| User
+        ChatUI -->|Offers Options| User
+
+        User -->|Selects Option| ChatUI
+        ChatUI -->|Sends Request| Dashboard
+
+        %% Dashboard Flow
+        Dashboard -->|Receives Request| Operator{Operator Action}
+        AI -->|Analyzes Request| Dashboard
+        AI -->|Provides Reasoning & Recommendation| Operator
+
+        %% Approval Path
+        Operator -->|Approve| ChatUI
+        ChatUI -->|Shows Boarding Pass| User
+
+        %% Rejection Path
+        Operator -->|Reject| ChatUI
+        ChatUI -->|Shows Rejection Card| User
+
+        %% Rejection Handling
+        User -->|Accepts Alternative| ChatUI
+        ChatUI -->|Generates New Boarding Pass| User
+
+        User -->|Requests Callback| ChatUI
+        ChatUI -->|Updates Status: Callback Req| Dashboard
+        Dashboard -->|Shows Contact Options| Operator
+
+        %% Styling
+        classDef green fill:#dcfce7,stroke:#166534,color:#166534;
+        classDef red fill:#fee2e2,stroke:#991b1b,color:#991b1b;
+        classDef blue fill:#eff6ff,stroke:#1e40af,color:#1e40af;
+
+        class ChatUI,Dashboard blue;
+        class AI green;
+    </div>
+</body>
+
+</html>
